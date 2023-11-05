@@ -13,6 +13,7 @@ let song;
 let fft;
 let aa = 255;
 let isInit = false;
+let offset = 0;
 let playButton;
 
 // Set a fixed class for rectangles of different colours and sizes
@@ -32,7 +33,7 @@ class yellowRect{
     rotate(this.rotation);
 
     noStroke();
-    fill(250,201,1);
+    fill(250, 201, 1, aa);// Add transparency
     rect(0,0,this.width,this.height);
 
     pop();
@@ -46,11 +47,24 @@ class blueRect{
     this.width = width ?? canvasWidth;
     this.height = height ?? canvasHeight;
     this.rotation = rotation ?? 0;
+// Select a random jitter direction for the rectangle
+    this.d = int(random(4)) + 1;
   }
 
   draw(){
     push();
-    translate(this.x,this.y);
+
+// Jitter by direction
+    if (this.d == 1) {
+      translate(this.x + offset, this.y);
+    } else if (this.d == 2) {
+      translate(this.x - offset, this.y);
+    } else if (this.d == 3) {
+      translate(this.x, this.y - offset);
+    } else if (this.d == 4) {
+      translate(this.x, this.y + offset);
+    }
+
     rotate(this.rotation);
 
     noStroke();
@@ -68,11 +82,22 @@ class redRect{
     this.width = width ?? canvasWidth;
     this.height = height ?? canvasHeight;
     this.rotation = rotation ?? 0;
+// Select a random jitter direction for the rectangle
+    this.d = int(random(4)) + 1;
   }
 
   draw(){
     push();
-    translate(this.x,this.y);
+// Jitter by direction
+     if (this.d == 1) {
+      translate(this.x + offset, this.y);
+    } else if (this.d == 2) {
+      translate(this.x - offset, this.y);
+    } else if (this.d == 3) {
+      translate(this.x, this.y - offset);
+    } else if (this.d == 4) {
+      translate(this.x, this.y + offset);
+    }
     rotate(this.rotation);
 
     noStroke();
@@ -90,11 +115,22 @@ class grayRect{
     this.width = width ?? canvasWidth;
     this.height = height ?? canvasHeight;
     this.rotation = rotation ?? 0;
-  }
+// Select a random jitter direction for the rectangle
+    this.d = int(random(4)) + 1;
+    }
 
   draw(){
     push();
-    translate(this.x,this.y);
+// Jitter by direction
+    if (this.d == 1) {
+      translate(this.x + offset, this.y);
+    } else if (this.d == 2) {
+      translate(this.x - offset, this.y);
+    } else if (this.d == 3) {
+      translate(this.x, this.y - offset);
+    } else if (this.d == 4) {
+      translate(this.x, this.y + offset);
+    }
     rotate(this.rotation);
 
     noStroke();
@@ -197,11 +233,17 @@ function draw() {
   background(240);
 
 // Determine whether the music is playing
-// If it is playing, analyze the audio, obtain audio data, and convert the audio data to 0-255
+// If it is playing, analyze the audio
   if (song.isPlaying()) {
   fft.analyze();
+// Obtain audio data in the frequency range of 20 to 200 Hz (bass part)
   amp = fft.getEnergy(20, 200); 
+// Convert the audio data from '0-200' to '0-255'
   aa = map(amp, 0, 200, 0, 255); 
+// Obtain audio data in the frequency range of 200 to 2000 Hz (from mid-low to mid-high range part)
+  amp = fft.getEnergy(200, 2000); 
+// Convert the audio data from '100-150' to '0-20'
+  offset = map(amp, 100, 150, 0, 20); 
   }
 
   yellowRects.forEach(r => r.draw());
@@ -244,7 +286,7 @@ function generateRandomRectangles() {
     let colorIndex = floor(random(colors.length));
 
     noStroke();
-    // Create corresponding rectangles based on colour
+// Create corresponding rectangles based on colour
     if (colorIndex == 0) {
       grayRects.push(
         new grayRect(region.x, region.y, pixelLength, pixelLength)
