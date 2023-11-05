@@ -9,9 +9,14 @@ let extraYellowRects = [];
 // Divide the 1000 * 1000 pixel canvas into 2500 small squares of 20 * 20 pixels
 let pixelLength = 20;
 let yellowRegions = [];
+let song;
+let fft;
+let aa = 255;
+let isInit = false;
+let playButton;
 
 // Set a fixed class for rectangles of different colours and sizes
-//This distinction can facilitate subsequent animations and endow them with unique functions
+// This distinction can facilitate subsequent animations and endow them with unique functions
 class yellowRect{
   constructor(x,y,width,height,rotation){
     this.x = x ?? 0;
@@ -49,7 +54,7 @@ class blueRect{
     rotate(this.rotation);
 
     noStroke();
-    fill(34,80,149);
+    fill(34, 80, 149, aa);// Add transparency
     rect(0,0,this.width,this.height);
 
     pop();
@@ -71,7 +76,7 @@ class redRect{
     rotate(this.rotation);
 
     noStroke();
-    fill(221,1,0);
+    fill(221, 1, 0, aa);// Add transparency
     rect(0,0,this.width,this.height);
 
     pop();
@@ -93,11 +98,16 @@ class grayRect{
     rotate(this.rotation);
 
     noStroke();
-    fill(200);
+    fill(200, aa);// Add transparency
     rect(0,0,this.width,this.height);
 
     pop();
   }
+}
+
+// Add audio
+function preload() {
+  song = loadSound("audio/Dizzy_Gillespie_Trinidad_Hello.mp3");
 }
 
 // Store rectangles of different colours and types in the array
@@ -170,24 +180,43 @@ function setup() {
   grayRects.push(new grayRect(660,420,pixelLength*3,60));
   grayRects.push(new grayRect(640,540,pixelLength*5,20));
 
-  
+// Create FFT for audio visualization
+  fft = new p5.FFT(0.3);
+
+// Add a play music button and set the style
+  playButton = createButton('Play music');
+  playButton.position(80, 100);
+  playButton.mousePressed(togglePlayback);
+  playButton.style('width', '120px');
+  playButton.style('height', '40px');
+  playButton.style('font-size', '20px');
 }
 
 // Start drawing the previously set rectangle and draw all the rectangles in the array
 function draw() {
   background(240);
 
+// Determine whether the music is playing
+// If it is playing, analyze the audio, obtain audio data, and convert the audio data to 0-255
+  if (song.isPlaying()) {
+  fft.analyze();
+  amp = fft.getEnergy(20, 200); 
+  aa = map(amp, 0, 200, 0, 255); 
+  }
+
   yellowRects.forEach(r => r.draw());
 
+// Generate the rectangle only once
+if (!isInit) {
   detectYellowRegions();
   generateRandomRectangles();
+  isInit = true;
+}
 
   extraYellowRects.forEach(r => r.draw());
   blueRects.forEach(r => r.draw());
   redRects.forEach(r => r.draw());
   grayRects.forEach(r => r.draw());
-
-
 }
 
 // Identify all yellow ranges and store yellow pixels in the yellowRegions array
@@ -208,7 +237,6 @@ function detectYellowRegions() {
 // Randomly generate small rectangles with colors of "#225095", "#dd0100", and "#c8c8c8" from the yellowRegions range
 // The number of small rectangles is equal to 300
 function generateRandomRectangles() {
-  noLoop();
   let colors = ["#225095","#dd0100","#c8c8c8"];
 
   for (let i = 0; i < 300; i++) {
@@ -216,7 +244,27 @@ function generateRandomRectangles() {
     let colorIndex = floor(random(colors.length));
 
     noStroke();
-    fill(colors[colorIndex]);
-    rect(region.x, region.y, pixelLength, pixelLength);
+    // Create corresponding rectangles based on colour
+    if (colorIndex == 0) {
+      grayRects.push(
+        new grayRect(region.x, region.y, pixelLength, pixelLength)
+      );
+    } else if (colorIndex == 1) {
+      redRects.push(new redRect(region.x, region.y, pixelLength, pixelLength));
+    } else if (colorIndex == 2) {
+      blueRects.push(
+        new blueRect(region.x, region.y, pixelLength, pixelLength)
+      );
+    }
+  }
+}
+
+function togglePlayback() {
+  if (song.isPlaying()) {
+      song.pause();
+      playButton.html('Play music');
+  } else {
+      song.play();
+      playButton.html('Pause play');
   }
 }
