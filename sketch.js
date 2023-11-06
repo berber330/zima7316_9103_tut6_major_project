@@ -16,6 +16,7 @@ let isInit = false;
 let offset = 0;
 let speed = 0
 let playButton;
+let musicPlaying = false
 
 // Set a fixed class for rectangles of different colours and sizes
 // This distinction can facilitate subsequent animations and endow them with unique functions
@@ -77,7 +78,7 @@ class blueRect{
 
     pop();
 
-    if (this.move) {
+    if (this.move && musicPlaying) {
       if (checkNext(this.dd, { x: this.x, y: this.y }, speed)) {
 // Move according to direction
         if (this.dd == 1) {
@@ -155,7 +156,7 @@ class redRect{
 
     pop();
 
-    if (this.move) {
+    if (this.move && musicPlaying) {
       if (checkNext(this.dd, { x: this.x, y: this.y }, speed)) {
 // Move according to direction
         if (this.dd == 1) {
@@ -212,7 +213,7 @@ class grayRect{
 
     pop();
 
-    if (this.move) {
+    if (this.move && musicPlaying) {
       if (checkNext(this.dd, { x: this.x, y: this.y }, speed)) {
 // Move according to direction
         if (this.dd == 1) {
@@ -315,11 +316,11 @@ function setup() {
 
 // Add a play music button and set the style
   playButton = createButton('Play music');
-  playButton.position(80, 100);
+  playButton.position(40, 100);
   playButton.mousePressed(togglePlayback);
-  playButton.style('width', '120px');
-  playButton.style('height', '40px');
-  playButton.style('font-size', '20px');
+  playButton.style('width', '150px');
+  playButton.style('height', '50px');
+  playButton.style('font-size', '25px');
 }
 
 // Start drawing the previously set rectangle and draw all the rectangles in the array
@@ -408,4 +409,5 @@ function togglePlayback() {
       song.play();
       playButton.html('Pause play');
   }
+  musicPlaying = !musicPlaying
 }
